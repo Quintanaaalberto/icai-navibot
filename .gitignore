@@ -1,0 +1,10 @@
+# Ignore specific folders
+/amr_ws/build/
+/amr_ws/log/
+/amr_ws/install/
+
+# Ignore all __pycache__ folders in all subdirectories
+**/__pycache__/
+
+
+
