@@ -16,7 +16,7 @@ class AStar:
         self,
         map_path: str,
         sensor_range: float,
-        action_costs: Tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0),
+        action_costs: Tuple[float, float, float, float] = (3.0, 1.0, 1.0, 3.0),
     ):
         """A* class initializer.
 

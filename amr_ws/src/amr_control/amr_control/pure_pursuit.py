@@ -60,6 +60,15 @@ class PurePursuit:
         # TODO: 4.2. Complete the function body (i.e., find closest_xy and closest_idx).
         closest_xy = (0.0, 0.0)
         closest_idx = 0
+        closest_distance = float("inf")
+
+        for i, (path_x, path_y) in enumerate(self._path):
+            distance = abs(x - path_x) + abs(y - path_y)
+            if distance < closest_distance:
+                closest_distance = distance
+                closest_xy = (path_x, path_y)
+                closest_idx = i
+
         return closest_xy, closest_idx
 
     def _find_target_point(

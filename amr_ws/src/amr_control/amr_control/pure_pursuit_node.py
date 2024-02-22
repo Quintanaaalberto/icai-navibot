@@ -72,6 +72,11 @@ class PurePursuitNode(Node):
 
         """
         # TODO: 4.1. Complete the function body with your code (i.e., replace the pass statement).
+        # Process the smoothed path message sent by the A* node you completed last week and store it
+        # in the PurePursuit class using the path property.
+
+        self.path = path_msg.poses
+
         pass
 
     def _publish_velocity_commands(self, v: float, w: float) -> None:
