@@ -87,10 +87,7 @@ class AStar:
             current_node = r, c = min(open_list, key=lambda o: open_list[o][0])
             last = open_list.pop(current_node)
 
-            
-            
             for i, action in enumerate(self._actions):
-                
                 new_node = r + action[0], c + action[1]
 
                 if new_node == goal_rc:
@@ -105,18 +102,14 @@ class AStar:
                     continue
                 if new_node in open_list:
                     continue
-                
-                # TODO: Improve contains -> very slow
-            
 
-                new_g = (
-                    last[1]
-                    + self._action_costs[i]
-                )
+                # TODO: Improve contains -> very slow
+
+                new_g = last[1] + self._action_costs[i]
                 new_f = new_g + heuristic[new_node]
 
                 open_list[new_node] = (new_f, new_g)
-                ancestors[new_node] =  current_node
+                ancestors[new_node] = current_node
 
             closed_list.add(current_node)
 
@@ -124,7 +117,10 @@ class AStar:
 
     @staticmethod
     def smooth_path(
-        path, data_weight: float = 0.1, smooth_weight: float = 0.1, tolerance: float = 1e-6
+        path,
+        data_weight: float = 0.1,
+        smooth_weight: float = 0.1,
+        tolerance: float = 1e-6,
     ) -> List[Tuple[float, float]]:
         """Computes a smooth trajectory from a Manhattan-like path.
 
@@ -143,22 +139,30 @@ class AStar:
         # TODO: 3.4. Complete the missing function body with your code.
         # optimize with gradient descent the path, min (pi - si)^2, min (si - si+1)^2
 
-        big_path = [path[0]]
+        """  big_path = [path[0]]
         for i in range(len(path) - 1):
             # Assuming path is a list of tuples (x, y)
             # stage = np.linspace(path[i], path[i + 1], num=2, endpoint=True, retstep=False, axis=0)
             big_path.append(path[i])
-            big_path.append((
-                (path[i][0] + path[i+1][0]) / 2,
-                (path[i][1] + path[i+1][1]) / 2
-            ))
-        big_path.append(path[-1])
+            big_path.append(((path[i][0] + path[i + 1][0]) / 2, (path[i][1] + path[i + 1][1]) / 2))
+        big_path.append(path[-1]) """
+
+        big_path = []
+
+        for i in range(len(path) - 1):
+            # Using linspace to create 2 points (including the endpoint) between path[i] and path[i+1]
+            # This will effectively create the original point and a midpoint, as the endpoint will be added in the next iteration
+            intermediate_points = np.linspace(path[i], path[i + 1], num=4, endpoint=False)
+            big_path.extend(intermediate_points)
+
+        big_path.append(path[-1])  # Add the last point which will not be included in the loop
+        big_path = [tuple(point) for point in big_path]
 
         # smooth the path
-       # Initialize smoothed_path with the same points as big_path
+        # Initialize smoothed_path with the same points as big_path
         smoothed_path = list(big_path)
 
-        tolerance = 0.001
+        tolerance = 0.0001
 
         change = tolerance
         while change >= tolerance:
@@ -167,13 +171,22 @@ class AStar:
                 for j in range(2):  # x and y coordinates
                     old_value = smoothed_path[i][j]
                     smoothed_path[i] = (
-                        smoothed_path[i][0] if j != 0 else old_value + data_weight * (big_path[i][0] - old_value) + smooth_weight * (smoothed_path[i-1][0] + smoothed_path[i+1][0] - 2 * old_value),
-                        smoothed_path[i][1] if j != 1 else old_value + data_weight * (big_path[i][1] - old_value) + smooth_weight * (smoothed_path[i-1][1] + smoothed_path[i+1][1] - 2 * old_value)
+                        smoothed_path[i][0]
+                        if j != 0
+                        else old_value
+                        + data_weight * (big_path[i][0] - old_value)
+                        + smooth_weight
+                        * (smoothed_path[i - 1][0] + smoothed_path[i + 1][0] - 2 * old_value),
+                        smoothed_path[i][1]
+                        if j != 1
+                        else old_value
+                        + data_weight * (big_path[i][1] - old_value)
+                        + smooth_weight
+                        * (smoothed_path[i - 1][1] + smoothed_path[i + 1][1] - 2 * old_value),
                     )
                     change += abs(smoothed_path[i][j] - old_value)
 
         return smoothed_path
-
 
     @staticmethod
     def plot(axes, path: List[Tuple[float, float]], smoothed_path: List[Tuple[float, float]] = ()):
