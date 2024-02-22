@@ -87,13 +87,15 @@ class AStar:
             current_node = r, c = min(open_list, key=lambda o: open_list[o][0])
             last = open_list.pop(current_node)
 
+            
+            
             for i, action in enumerate(self._actions):
-                
-                if current_node == goal_rc:
-                    return self._reconstruct_path(start, goal, ancestors), len(closed_list)
                 
                 new_node = r + action[0], c + action[1]
 
+                if new_node == goal_rc:
+                    ancestors[new_node] = current_node
+                    return self._reconstruct_path(start_rc, goal_rc, ancestors), len(closed_list)
 
                 if not 0 <= new_node[0] < shape[0] or not 0 <= new_node[1] < shape[1]:
                     continue
@@ -114,7 +116,7 @@ class AStar:
                 new_f = new_g + heuristic[new_node]
 
                 open_list[new_node] = (new_f, new_g)
-                ancestors[new_node] =  self._rc_to_xy(current_node)
+                ancestors[new_node] =  current_node
 
             closed_list.add(current_node)
 
@@ -141,65 +143,37 @@ class AStar:
         # TODO: 3.4. Complete the missing function body with your code.
         # optimize with gradient descent the path, min (pi - si)^2, min (si - si+1)^2
 
-        """ smoothing = 1  # number of points to add per section
-
-        big_path = []
-        smoothed_path[0] = path[0]
-
-        # add intermidiate point to the original path to ease smoothing
-        for j in range(smoothing):
-            length = len(path)
-            i = 0
-            while i < length - 1:
-                big_path.append(path[i])
-                big_path.append(
-                    (
-                        path[i][0] + (path[i + 1][0] - path[i][0]) * (j + 1) / 2,
-                        path[i][1] + (path[i + 1][1] - path[i][1]) * (j + 1) / 2,
-                    )
-                )
-                i += 1
-            path = big_path """
-
-        big_path = []
-
+        big_path = [path[0]]
         for i in range(len(path) - 1):
-            stage = np.linspace(path[i], path[i + 1], num=2, endpoint=True, retstep=False, axis=0)
-            big_path.append(stage)
+            # Assuming path is a list of tuples (x, y)
+            # stage = np.linspace(path[i], path[i + 1], num=2, endpoint=True, retstep=False, axis=0)
+            big_path.append(path[i])
+            big_path.append((
+                (path[i][0] + path[i+1][0]) / 2,
+                (path[i][1] + path[i+1][1]) / 2
+            ))
+        big_path.append(path[-1])
 
         # smooth the path
-        smoothed_path[0] = big_path[0]
+       # Initialize smoothed_path with the same points as big_path
+        smoothed_path = list(big_path)
 
         tolerance = 0.001
 
-        while True:
-            for i in range(len(big_path) - 1):
-                smoothed_path.append(
-                    (
-                        smoothed_path[i][0]
-                        + data_weight * (big_path[i][0] - smoothed_path[i][0])
-                        + smooth_weight
-                        * (
-                            smoothed_path[i - 1][0]
-                            + smoothed_path[i + 1][0]
-                            - 2 * smoothed_path[i][0]
-                        ),
-                        smoothed_path[i][1]
-                        + data_weight * (big_path[i][1] - smoothed_path[i][1])
-                        + smooth_weight
-                        * (
-                            -2 * smoothed_path[i][1]
-                            + smoothed_path[i + 1][1]
-                            + smoothed_path[i - 1][1]
-                        ),
+        change = tolerance
+        while change >= tolerance:
+            change = 0
+            for i in range(1, len(big_path) - 1):  # Avoid the first and last point
+                for j in range(2):  # x and y coordinates
+                    old_value = smoothed_path[i][j]
+                    smoothed_path[i] = (
+                        smoothed_path[i][0] if j != 0 else old_value + data_weight * (big_path[i][0] - old_value) + smooth_weight * (smoothed_path[i-1][0] + smoothed_path[i+1][0] - 2 * old_value),
+                        smoothed_path[i][1] if j != 1 else old_value + data_weight * (big_path[i][1] - old_value) + smooth_weight * (smoothed_path[i-1][1] + smoothed_path[i+1][1] - 2 * old_value)
                     )
-                )
-                tolerance_x = abs(smoothed_path[i][0] - smoothed_path[i + 1][0])
-                tolerance_y = abs(smoothed_path[i][1] - smoothed_path[i + 1][1])
+                    change += abs(smoothed_path[i][j] - old_value)
 
-                if tolerance_x < tolerance and tolerance_y < tolerance:
-                    smoothed_path.append(big_path[-1])
-                    return smoothed_path
+        return smoothed_path
+
 
     @staticmethod
     def plot(axes, path: List[Tuple[float, float]], smoothed_path: List[Tuple[float, float]] = ()):
@@ -310,16 +284,16 @@ class AStar:
 
     def _reconstruct_path(
         self,
-        start: Tuple[float, float],
-        goal: Tuple[float, float],
+        start: Tuple[int, int],
+        goal: Tuple[int, int],
         ancestors: Dict[Tuple[int, int], Tuple[int, int]],
     ) -> List[Tuple[float, float]]:
         """Computes the path from the start to the goal given the ancestors of a search algorithm.
 
         Args:
-            start: Initial location in (x, y) format.
-            goal: Goal location in (x, y) format.
-            ancestors: Matrix that contains for every cell, None or the (x, y) ancestor from which
+            start: Initial location in (r, c) format.
+            goal: Goal location in (r, c) format.
+            ancestors: Matrix that contains for every cell, None or the (r, c) ancestor from which
                        it was opened.
 
         Returns: Path to the goal (start location first) in (x, y) format.
@@ -332,7 +306,7 @@ class AStar:
         node = goal
 
         while node != start:
-            path.append(node)
+            path.append(self._rc_to_xy(node))
             node = ancestors[node]
 
         # path.append(start)

@@ -78,8 +78,8 @@ class AStarNode(Node):
 
         for x, y in path:
             pose = PoseStamped()
-            pose.pose.position.x = x
-            pose.pose.position.y = y
+            pose.pose.position.x = float(x)
+            pose.pose.position.y = float(y)
             path_msg.poses.append(pose)
 
         self._publisher_path.publish(path_msg)
