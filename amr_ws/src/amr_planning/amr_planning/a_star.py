@@ -293,6 +293,9 @@ class AStar:
                 # and store it in the heuristic matrix
                 heuristic[r, c] = abs(r - goal[0]) + abs(c - goal[1])  # Manhattan distance
 
+        # heuristic to naive
+        # heuristic = np.zeros_like(self._map.grid_map)
+
         return heuristic
 
     def _reconstruct_path(
