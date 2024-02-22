@@ -1,4 +1,5 @@
 from typing import List, Tuple
+from math import atan2, sin
 
 
 class PurePursuit:
@@ -32,6 +33,15 @@ class PurePursuit:
         # TODO: 4.4. Complete the function body with your code (i.e., compute v and w).
         v = 0.0
         w = 0.0
+
+        if self._path:
+            _, closest_idx = self._find_closest_point(x, y)
+            target_xy = self._find_target_point((x, y), closest_idx)
+
+            # Compute v and w
+            alpha = atan2(target_xy[1] - y, target_xy[0] - x) - theta
+            v = 0.7
+            w = 2 * v * sin(alpha) / self._lookahead_distance
 
         return v, w
 
@@ -86,4 +96,16 @@ class PurePursuit:
         """
         # TODO: 4.3. Complete the function body with your code (i.e., determine target_xy).
         target_xy = (0.0, 0.0)
+
+        for i in range(origin_idx, len(self._path)):
+            path_x, path_y = self._path[i]
+            distance = (origin_xy[0] - path_x) ** 2 + (origin_xy[1] - path_y) ** 2
+
+            if distance > self._lookahead_distance**2:
+                target_xy = (path_x, path_y)
+                break
+            if i == len(self._path) - 1:
+                target_xy = (path_x, path_y)
+                break
+
         return target_xy
