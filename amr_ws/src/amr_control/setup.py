@@ -20,6 +20,7 @@ setup(
     entry_points={
         "console_scripts": [
             "wall_follower = amr_control.wall_follower_node:main",
+            # "pure_pursuit = amr_control.pure_pursuit_node:main",
         ],
     },
 )

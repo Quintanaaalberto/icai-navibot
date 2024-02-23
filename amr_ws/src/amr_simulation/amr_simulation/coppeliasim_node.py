@@ -13,6 +13,8 @@ from typing import List
 from amr_simulation.coppeliasim import CoppeliaSim
 from amr_simulation.robot_p3dx import RobotP3DX
 
+import time
+
 
 class CoppeliaSimNode(Node):
     def __init__(self):
@@ -68,6 +70,8 @@ class CoppeliaSimNode(Node):
         self._publisher_us = self.create_publisher(
             msg_type=RangeScan, topic="us_scan", qos_profile=10
         )
+
+        time.sleep(5)
 
         # Attribute and object initializations
         self._coppeliasim = CoppeliaSim(dt, start, goal_tolerance)
