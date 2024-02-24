@@ -30,7 +30,7 @@ class WallFollowerNode(Node):
         self._subscribers.append(message_filters.Subscriber(self, Odometry, "odom"))
         self._subscribers.append(message_filters.Subscriber(self, RangeScan, "us_scan"))
         # TODO: could this be the problem????
-        # self._subscribers.append(message_filters.Subscriber(self, PoseStamped, "pose"))
+        self._subscribers.append(message_filters.Subscriber(self, PoseStamped, "pose"))
 
         ts = message_filters.ApproximateTimeSynchronizer(self._subscribers, queue_size=10, slop=10)
         ts.registerCallback(self._compute_commands_callback)
@@ -82,6 +82,7 @@ class WallFollowerNode(Node):
             w: Angular velocity command [rad/s].
 
         """
+        
         # TODO: 1.11. Complete the function body with your code (i.e., replace the pass statement).
         msg = TwistStamped()
         msg.twist.linear.x = v

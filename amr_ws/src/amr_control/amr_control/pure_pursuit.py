@@ -1,5 +1,5 @@
+import math
 from typing import List, Tuple
-from math import atan2, sin
 
 
 class PurePursuit:
@@ -23,7 +23,7 @@ class PurePursuit:
         Args:
             x: Estimated robot x coordinate [m].
             y: Estimated robot y coordinate [m].
-            theta: Estimated robot heading [rad].
+            theta: Estimated robot heading [rad]. 
 
         Returns:
             v: Linear velocity [m/s].
@@ -31,18 +31,20 @@ class PurePursuit:
 
         """
         # TODO: 4.4. Complete the function body with your code (i.e., compute v and w).
-        v = 0.0
-        w = 0.0
-
-        if self._path:
-            _, closest_idx = self._find_closest_point(x, y)
-            target_xy = self._find_target_point((x, y), closest_idx)
-
-            # Compute v and w
-            alpha = atan2(target_xy[1] - y, target_xy[0] - x) - theta
-            v = 0.7
-            w = 2 * v * sin(alpha) / self._lookahead_distance
-
+        try:
+            # 1. Find the closest path point to the current robot pose.
+            closest_xy, closest_idx = self._find_closest_point(x, y)
+            # 2. Find the target point based on the lookahead distance.
+            (target_x , target_y) = self._find_target_point(closest_xy, closest_idx)
+            v = 0.5
+            
+            alpha = math.atan2(target_y - y, target_x - x) - theta
+        
+            w = 2 * v * math.sin(alpha) / self._lookahead_distance
+        except ValueError:	
+            print("ValueError344")
+            v = 0.0
+            w = 0.0
         return v, w
 
     @property
@@ -68,17 +70,19 @@ class PurePursuit:
 
         """
         # TODO: 4.2. Complete the function body (i.e., find closest_xy and closest_idx).
-        closest_xy = (0.0, 0.0)
-        closest_idx = 0
-        closest_distance = float("inf")
-
-        for i, (path_x, path_y) in enumerate(self._path):
-            distance = abs(x - path_x) + abs(y - path_y)
-            if distance < closest_distance:
-                closest_distance = distance
-                closest_xy = (path_x, path_y)
-                closest_idx = i
-
+        closest_xy = (0.0, 0.0) # Closest path point (x, y) [m].
+        closest_idx = 0 # Index of the closest path point.
+        # 1. Iterate over the path points to find the closest one.
+        distances = []
+        for idx, (px, py) in enumerate(self._path):
+            # 2. Compute the distance between the robot and the current path point.
+            x_diff = x - px
+            y_diff = y - py
+            distance = (x_diff ** 2 + y_diff ** 2) ** 0.5
+            distances.append(distance)
+        # 3. Find the index of the closest path point.
+        closest_idx = distances.index(min(distances))
+        closest_xy = self._path[closest_idx]
         return closest_xy, closest_idx
 
     def _find_target_point(
@@ -95,17 +99,16 @@ class PurePursuit:
 
         """
         # TODO: 4.3. Complete the function body with your code (i.e., determine target_xy).
-        target_xy = (0.0, 0.0)
-
-        for i in range(origin_idx, len(self._path)):
-            path_x, path_y = self._path[i]
-            distance = (origin_xy[0] - path_x) ** 2 + (origin_xy[1] - path_y) ** 2
-
-            if distance > self._lookahead_distance**2:
-                target_xy = (path_x, path_y)
-                break
-            if i == len(self._path) - 1:
-                target_xy = (path_x, path_y)
+        target_xy = (0.0, 0.0) # Target point (x, y) [m] intialized to the origin.
+        # Look for points ahead of the current origin_idx
+        # Compute the distance between the robot and each path point 
+        for idx, (px, py) in enumerate(self._path[origin_idx:]):
+            x_diff = origin_xy[0] - px
+            y_diff = origin_xy[1] - py
+            distance = (x_diff ** 2 + y_diff ** 2) ** 0.5   
+            # If the distance is greater than the lookahead distance, the target point is found
+            if distance > self._lookahead_distance:
+                target_xy = (px, py)
                 break
 
         return target_xy

@@ -27,7 +27,7 @@ class PurePursuitNode(Node):
 
         # Subscribers
         self._subscriber_pose = self.create_subscription(
-            PoseStamped, "pose", self._compute_commands_callback, 10
+            PoseStamped, "/pose", self._compute_commands_callback, 10
         )
         self._subscriber_path = self.create_subscription(Path, "path", self._path_callback, 10)
 
@@ -62,7 +62,7 @@ class PurePursuitNode(Node):
             self.get_logger().info(f"Commands: v = {v:.3f} m/s, w = {w:+.3f} rad/s")
 
             # Publish
-            self._publish_velocity_commands(v, w)
+            self._publish_velocity_commands(0.5, w)
 
     def _path_callback(self, path_msg: Path):
         """Subscriber callback. Saves the path the pure pursuit controller has to follow.
@@ -72,12 +72,10 @@ class PurePursuitNode(Node):
 
         """
         # TODO: 4.1. Complete the function body with your code (i.e., replace the pass statement).
-        # Process the smoothed path message sent by the A* node you completed last week and store it
-        # in the PurePursuit class using the path property.
-
-        self.path = path_msg.poses
-
-        pass
+        # Get the x and y coordinates of the path
+        path = [(pose.pose.position.x, pose.pose.position.y) for pose in path_msg.poses]
+        self._pure_pursuit.path = path
+        
 
     def _publish_velocity_commands(self, v: float, w: float) -> None:
         """Publishes velocity commands in a geometry_msgs.msg.TwistStamped message.
@@ -88,8 +86,8 @@ class PurePursuitNode(Node):
 
         """
         msg = TwistStamped()
-        msg.twist.linear.x = v
-        msg.twist.angular.z = w
+        msg.twist.linear.x = float(v)
+        msg.twist.angular.z = float(w)
         self._publisher.publish(msg)
 
 
