@@ -73,9 +73,9 @@ class PurePursuitNode(Node):
         """
         # TODO: 4.1. Complete the function body with your code (i.e., replace the pass statement).
         # Get the x and y coordinates of the path
-        path = [(pose.pose.position.x, pose.pose.position.y) for pose in path_msg.poses]
-        self._pure_pursuit.path = path
-        
+        self._pure_pursuit.path = [
+            (pose.pose.position.x, pose.pose.position.y) for pose in path_msg.poses
+        ]
 
     def _publish_velocity_commands(self, v: float, w: float) -> None:
         """Publishes velocity commands in a geometry_msgs.msg.TwistStamped message.
