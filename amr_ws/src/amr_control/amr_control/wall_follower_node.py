@@ -82,7 +82,7 @@ class WallFollowerNode(Node):
             w: Angular velocity command [rad/s].
 
         """
-        
+
         # TODO: 1.11. Complete the function body with your code (i.e., replace the pass statement).
         msg = TwistStamped()
         msg.twist.linear.x = v

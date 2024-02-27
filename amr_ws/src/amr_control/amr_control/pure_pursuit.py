@@ -36,7 +36,7 @@ class PurePursuit:
             closest_xy, closest_idx = self._find_closest_point(x, y)
             # 2. Find the target point based on the lookahead distance.
             (target_x, target_y) = self._find_target_point(closest_xy, closest_idx)
-            v = 0.7
+            v = 1  # Linear velocity [m/s].
 
             alpha = math.atan2(target_y - y, target_x - x) - theta
 

@@ -81,7 +81,7 @@ class ParticleFilter:
             # Compute the pose estimate
             pose = np.mean(self._particles, axis=0)
             # Reduce the number of particles to 100
-            self._particle_count = 100
+            self._particle_count = 50  # 100
         else:
             localized = False
             self._particle_count = self._initial_particle_count

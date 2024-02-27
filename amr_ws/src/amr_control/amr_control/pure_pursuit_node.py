@@ -17,10 +17,10 @@ class PurePursuitNode(Node):
         super().__init__("pure_pursuit")
 
         # Parameters
-        self.declare_parameter("dt", 0.05)
+        self.declare_parameter("dt", 0.2)
         dt = self.get_parameter("dt").get_parameter_value().double_value
 
-        self.declare_parameter("lookahead_distance", 0.5)
+        self.declare_parameter("lookahead_distance", 0.7)
         lookahead_distance = (
             self.get_parameter("lookahead_distance").get_parameter_value().double_value
         )

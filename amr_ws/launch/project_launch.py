@@ -6,9 +6,9 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     world = "project"
-    start = (2.0, -3.0, 1.5 * math.pi)
+    start = (-4.0, -4.0, 0.5 * math.pi)
     goal = (3.0, 2.0)
-    particles = 6500
+    particles = 2000
 
     return LaunchDescription(
         [
