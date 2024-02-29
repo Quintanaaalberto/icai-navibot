@@ -163,10 +163,55 @@ class ParticleFilter:
         weights /= total_weight  # Assign equal weight if sum is 0 or negative
 
         # Resample particles according to the normalized weights
-        indices = np.random.choice(
+        """ indices = np.random.choice(
             len(self._particles), size=self._particle_count, p=weights, replace=True
-        )
+        ) """
+
+        indices = self.stratified_resampling(weights)
+
         self._particles = self._particles[indices]
+
+
+
+    def stratified_resampling(self, weights) -> np.ndarray:
+        """
+        Performs stratified resampling on the particles based on their weights.
+
+        This method divides the range [0, 1] into N equal parts, where N is the number of particles,
+        and then selects a sample from each part based on the particles' weights. This ensures a more
+        uniform distribution of the resampled particles and reduces sampling variance.
+
+        Returns:
+            np.ndarray: Indices of the resampled particles.
+        """
+        num_particles = len(self._particles)
+
+        # Ensure there are particles to resample
+        if num_particles == 0:
+            raise ValueError("No particles to resample.")
+
+        # Compute the cumulative sum of the weights
+        cumulative_sum = np.cumsum(weights)
+
+        # Normalize the weights to form a distribution
+        cumulative_sum /= cumulative_sum[-1]
+
+        # Generate N uniform points from each stratum [0, 1/N), [1/N, 2/N), ..., [(N-1)/N, 1)
+        positions = (np.arange(num_particles) + np.random.uniform(size=num_particles)) / num_particles
+
+        # Initialize the resample indices array
+        resample_indices = np.zeros(num_particles, dtype=int)
+
+        # Find the index of the first particle to copy over for each position
+        idx = 0
+        for i, pos in enumerate(positions):
+            # Advance to the right interval in the cumulative sum
+            while cumulative_sum[idx] < pos:
+                idx += 1
+            resample_indices[i] = idx
+
+        return resample_indices
+
 
     def plot(self, axes, orientation: bool = True):
         """Draws particles.
