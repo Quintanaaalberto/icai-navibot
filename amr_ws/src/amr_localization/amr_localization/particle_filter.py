@@ -82,6 +82,10 @@ class ParticleFilter:
             pose = np.mean(self._particles, axis=0)
             # Reduce the number of particles to 100
             self._particle_count = 50  # 100
+        elif cluster_count > 1 and cluster_count < 4:
+            # If more than one cluster is found, decrease the number of particles
+            localized = False
+            self._particle_count = int(self._particle_count * 0.7)
         else:
             localized = False
             self._particle_count = self._initial_particle_count
@@ -163,15 +167,13 @@ class ParticleFilter:
         weights /= total_weight  # Assign equal weight if sum is 0 or negative
 
         # Resample particles according to the normalized weights
-        """ indices = np.random.choice(
+        indices = np.random.choice(
             len(self._particles), size=self._particle_count, p=weights, replace=True
-        ) """
+        )
 
-        indices = self.stratified_resampling(weights)
+        # indices = self.stratified_resampling(weights)
 
         self._particles = self._particles[indices]
-
-
 
     def stratified_resampling(self, weights) -> np.ndarray:
         """
@@ -197,7 +199,9 @@ class ParticleFilter:
         cumulative_sum /= cumulative_sum[-1]
 
         # Generate N uniform points from each stratum [0, 1/N), [1/N, 2/N), ..., [(N-1)/N, 1)
-        positions = (np.arange(num_particles) + np.random.uniform(size=num_particles)) / num_particles
+        positions = (
+            np.arange(num_particles) + np.random.uniform(size=num_particles)
+        ) / num_particles
 
         # Initialize the resample indices array
         resample_indices = np.zeros(num_particles, dtype=int)
@@ -211,7 +215,6 @@ class ParticleFilter:
             resample_indices[i] = idx
 
         return resample_indices
-
 
     def plot(self, axes, orientation: bool = True):
         """Draws particles.

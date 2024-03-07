@@ -8,7 +8,7 @@ def generate_launch_description():
     world = "project"
     start = (-4.0, -4.0, 0.5 * math.pi)
     goal = (3.0, 2.0)
-    particles = 2000
+    particles = 5000
 
     return LaunchDescription(
         [
