@@ -34,13 +34,25 @@ class PurePursuit:
         try:
             # 1. Find the closest path point to the current robot pose.
             closest_xy, closest_idx = self._find_closest_point(x, y)
+            # given orientation of the robot check if looking away
+
+            """ path_orientation = math.atan2(closest_xy[1] - y, closest_xy[0] - x)
+            starting = True
+            looking_away = True
+            if starting and not abs(path_orientation - theta) > math.pi / 2:
+                looking_away = False
+                starting = False """
+
+            """ if looking_away:
+                v = 0.0
+                w = 1.0
+            else: """
             # 2. Find the target point based on the lookahead distance.
             (target_x, target_y) = self._find_target_point(closest_xy, closest_idx)
-            v = 1  # Linear velocity [m/s].
-
+            v = 0.6  # Linear velocity [m/s].
             alpha = math.atan2(target_y - y, target_x - x) - theta
-
             w = 2 * v * math.sin(alpha) / self._lookahead_distance
+
         except ValueError:
             print("ValueError344")
             v = 0.0

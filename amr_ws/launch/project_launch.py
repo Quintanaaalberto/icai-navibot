@@ -6,9 +6,9 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     world = "project"
-    start = (2.0, 0.0, 1.5 * math.pi)
-    goal = (3.0, 2.0)
-    particles = 3000
+    start = (2.0, -3.0, 1.5 * math.pi)
+    goal = (-4.0, -4.0)
+    particles = 5500
 
     return LaunchDescription(
         [
@@ -16,7 +16,7 @@ def generate_launch_description():
                 package="amr_control",
                 executable="wall_follower",
                 output="screen",
-                arguments=["--ros-args", "--log-level", "WARN"],
+                arguments=["--ros-args", "--log-level", "INFO"],
                 parameters=[{"enable_localization": True}],
             ),
             Node(

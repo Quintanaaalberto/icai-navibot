@@ -57,7 +57,11 @@ class WallFollower:
         diagonaleft = z_us[2]
         diagonalright = z_us[6]
 
-        if front < self.limits.side:
+        if min(z_us) >= 1.0:
+            # If there are no obstacles, move forward
+            v = self.limits.lim_v
+            w = 0.0
+        elif front < self.limits.side:
             v = 0.0
             if right < self.limits.side and left1 < self.limits.side:
                 w = self.limits.w_turn

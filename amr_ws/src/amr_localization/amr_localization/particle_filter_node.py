@@ -107,11 +107,15 @@ class ParticleFilterNode(Node):
 
         # Execute particle filter
         self._execute_motion_step(z_v, z_w)
-        x_h, y_h, theta_h = self._execute_measurement_step(z_us)
+        if self._steps == 0:
+            self.x_h, self.y_h, self.theta_h = self._execute_measurement_step(z_us)
+
+        if self._steps % 2 == 0:
+            self.x_h, self.y_h, self.theta_h = self._execute_measurement_step(z_us)
         self._steps += 1
 
         # Publish
-        self._publish_pose_estimate(x_h, y_h, theta_h)
+        self._publish_pose_estimate(self.x_h, self.y_h, self.theta_h)
 
     def _execute_measurement_step(self, z_us: List[float]) -> Tuple[float, float, float]:
         """Executes and monitors the measurement step (sense) of the particle filter.
