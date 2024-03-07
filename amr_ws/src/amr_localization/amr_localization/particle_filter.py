@@ -134,7 +134,7 @@ class ParticleFilter:
             else:
                 self._particles[i] = (intersection[0], intersection[1], theta)
 
-    def resample(self, measurements: List[float]) -> None:
+    def resample(self, measurements: List[float], localized=False) -> None:
         """Samples a new set of particles. Resamples with replacement according to the importance
         of the weights provided by the function _measurement_probability.
 
@@ -167,15 +167,16 @@ class ParticleFilter:
         weights /= total_weight  # Assign equal weight if sum is 0 or negative
 
         # Resample particles according to the normalized weights
-        indices = np.random.choice(
-            len(self._particles), size=self._particle_count, p=weights, replace=True
-        )
-
-        # indices = self.stratified_resampling(weights)
+        if not localized:
+            indices = self.systematic_resampling(weights)
+        else:
+            indices = np.random.choice(
+                len(self._particles), size=self._particle_count, p=weights, replace=True
+            )
 
         self._particles = self._particles[indices]
 
-    def stratified_resampling(self, weights) -> np.ndarray:
+    def systematic_resampling(self, weights) -> np.ndarray:
         """
         Performs stratified resampling on the particles based on their weights.
 
@@ -188,31 +189,23 @@ class ParticleFilter:
         """
         num_particles = len(self._particles)
 
-        # Ensure there are particles to resample
-        if num_particles == 0:
-            raise ValueError("No particles to resample.")
+        cValues = []
+        cValues.append(weights[0])
 
-        # Compute the cumulative sum of the weights
-        cumulative_sum = np.cumsum(weights)
+        for i in range(num_particles - 1):
+            cValues.append(cValues[i] + weights[i + 1])
 
-        # Normalize the weights to form a distribution
-        cumulative_sum /= cumulative_sum[-1]
+        # starting random point
+        start = np.random.uniform(0, 1 / num_particles)
 
-        # Generate N uniform points from each stratum [0, 1/N), [1/N, 2/N), ..., [(N-1)/N, 1)
-        positions = (
-            np.arange(num_particles) + np.random.uniform(size=num_particles)
-        ) / num_particles
-
-        # Initialize the resample indices array
-        resample_indices = np.zeros(num_particles, dtype=int)
-
-        # Find the index of the first particle to copy over for each position
-        idx = 0
-        for i, pos in enumerate(positions):
-            # Advance to the right interval in the cumulative sum
-            while cumulative_sum[idx] < pos:
-                idx += 1
-            resample_indices[i] = idx
+        # this list stores the indices of the resampled particles
+        resample_indices = []
+        for i in range(num_particles):
+            c = start + i / num_particles
+            for j in range(num_particles):
+                if c <= cValues[j]:
+                    resample_indices.append(j)
+                    break
 
         return resample_indices
 
